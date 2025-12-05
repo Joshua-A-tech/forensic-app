@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kenyan Forensic App - Dashboard</title>
+    <link rel="stylesheet" href="forensic-dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="forensic-dashboard.js" defer></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="20" y="30" width="60" height="50" rx="8" fill="none" stroke="currentColor" stroke-width="3"/>
+                        <circle cx="50" cy="50" r="8" fill="currentColor"/>
+                        <path d="M 35 60 Q 50 70 65 60" stroke="currentColor" stroke-width="2" fill="none"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>Kenyan Forensic</h1>
+                    <p>By Tech Gurus</p>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-page="dashboard">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="3" width="8" height="8" fill="currentColor"/>
+                        <rect x="13" y="3" width="8" height="8" fill="currentColor"/>
+                        <rect x="3" y="13" width="8" height="8" fill="currentColor"/>
+                        <rect x="13" y="13" width="8" height="8" fill="currentColor"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </button>
+
+                <button class="nav-item" data-page="report">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="5" y="3" width="14" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="12" cy="10" r="1.5" fill="currentColor"/>
+                        <path d="M 8 15 L 12 12 L 16 15" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                    </svg>
+                    <span>Report a crime</span>
+                    <span class="badge">7</span>
+                </button>
+
+                <button class="nav-item" data-page="cases">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="2"/>
+                        <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2"/>
+                        <line x1="3" y1="18" x2="21" y2="18" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span>Cases</span>
+                    <span class="badge">6</span>
+                </button>
+
+                <button class="nav-item" data-page="evidence">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="4" y="2" width="16" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+                        <line x1="4" y1="7" x2="20" y2="7" stroke="currentColor" stroke-width="1"/>
+                        <circle cx="12" cy="14" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                    </svg>
+                    <span>Evidence</span>
+                    <span class="badge">4</span>
+                </button>
+
+                <button class="nav-item" data-page="users">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="8" r="4" fill="currentColor"/>
+                        <path d="M 3 20 Q 3 14 12 14 Q 21 14 21 20" fill="currentColor"/>
+                    </svg>
+                    <span>Users</span>
+                </button>
+
+                <button class="nav-item" data-page="settings">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                        <path d="M 12 2 L 15 8 L 21 8 L 17 12 L 18 18 L 12 15 L 6 18 L 7 12 L 3 8 L 9 8 Z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                    </svg>
+                    <span>Settings</span>
+                </button>
+            </nav>
+
+            <button class="logout-btn">Logout</button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-bar">
+                <h2 id="page-title">Welcome to the Dashboard</h2>
+                <div class="header-actions">
+                    <div class="user-profile">
+                        <span>forensic_admin</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Container -->
+            <div class="page-container">
+                <!-- Dashboard Page -->
+                <div id="dashboard-page" class="page active">
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <h3>Active Cases</h3>
+                            <div class="stat-number">1</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Resolved This week</h3>
+                            <div class="stat-number">3</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Pending ID Theft</h3>
+                            <div class="stat-number">3</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Crime Statistics</h3>
+                        <canvas id="crimeChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Report a Crime Page -->
+                <div id="report-page" class="page">
+                    <h2>Report a cyber crime</h2>
+                    <form id="crimeForm" class="crime-form">
+                        <div class="form-group">
+                            <label for="fullname">Full Names</label>
+                            <input type="text" id="fullname" name="fullname" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email address</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="crime-type">Type of Crime</label>
+                            <select id="crime-type" name="crime_type" required>
+                                <option value="">Select crime type</option>
+                                <option value="phishing">Phishing</option>
+                                <option value="fraud">Fraud</option>
+                                <option value="identity-theft">Identity Theft</option>
+                                <option value="malware">Malware</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea id="description" name="description" rows="5" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="evidence-upload">Upload evidence</label>
+                            <div class="file-upload">
+                                <input type="file" id="evidence-upload" name="evidence" multiple>
+                                <span>Click to upload or drag and drop</span>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-submit">Submit</button>
+                            <button type="reset" class="btn-cancel">Cancel</button>
+                        </div>
+
+                        <div id="crime-message" role="status" aria-live="polite" class="form-message"></div>
+                    </form>
+                </div>
+
+                <!-- Cases Page -->
+                <div id="cases-page" class="page">
+                    <h2>Active cases</h2>
+                    <div class="table-wrapper">
+                        <table class="cases-table">
+                            <thead>
+                                <tr>
+                                    <th>Case ID</th>
+                                    <th>Reporter</th>
+                                    <th>Incident type</th>
+                                    <th>Priority</th>
+                                    <th>Date Recieved</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>GH-2025-11</td>
+                                    <td>E****</td>
+                                    <td>Identity Theft</td>
+                                    <td><span class="priority high">High</span></td>
+                                    <td>16 July 2025</td>
+                                    <td><span class="status pending">Pending</span></td>
+                                </tr>
+                                <tr>
+                                    <td>GH-2025-10</td>
+                                    <td>y***</td>
+                                    <td>Phishing</td>
+                                    <td><span class="priority high">High</span></td>
+                                    <td>6 May 2025</td>
+                                    <td><span class="status pending">pending</span></td>
+                                </tr>
+                                <tr>
+                                    <td>GH-2025-20</td>
+                                    <td>S****</td>
+                                    <td>Financial Fraud</td>
+                                    <td><span class="priority high">High</span></td>
+                                    <td>12 June 2025</td>
+                                    <td><span class="status active">Active</span></td>
+                                </tr>
+                                <tr>
+                                    <td>GH-2025-6</td>
+                                    <td>T****</td>
+                                    <td>Loan Fraud</td>
+                                    <td><span class="priority high">High</span></td>
+                                    <td>22 May 2025</td>
+                                    <td><span class="status pending">Pending</span></td>
+                                </tr>
+                                <tr>
+                                    <td>GH-2025-77</td>
+                                    <td>z****</td>
+                                    <td>Identity Theft</td>
+                                    <td><span class="priority low">Low</span></td>
+                                    <td>16 March 2025</td>
+                                    <td><span class="status closed">Closed</span></td>
+                                </tr>
+                                <tr>
+                                    <td>GH-2025-18</td>
+                                    <td>H****</td>
+                                    <td>Phishing</td>
+                                    <td><span class="priority high">High</span></td>
+                                    <td>22 September 2025</td>
+                                    <td><span class="status closed">Closed</span></td>
+                                </tr>
+                                <tr>
+                                    <td>GH-2025-22</td>
+                                    <td>Y*****</td>
+                                    <td>Malware</td>
+                                    <td><span class="priority medium">Medium</span></td>
+                                    <td>14 May 2025</td>
+                                    <td><span class="status closed">Closed</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Evidence Page -->
+                <div id="evidence-page" class="page">
+                    <h2>Evidence</h2>
+                    <div class="search-bar">
+                        <input type="text" id="evidence-search" placeholder="Search" class="search-input">
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="evidence-table">
+                            <thead>
+                                <tr>
+                                    <th>File Name</th>
+                                    <th>Type</th>
+                                    <th>Uploaded by</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>IdentityTheft.png</td>
+                                    <td>Image</td>
+                                    <td>Office A</td>
+                                    <td>16-07-2025</td>
+                                </tr>
+                                <tr>
+                                    <td>Phishing File</td>
+                                    <td>file</td>
+                                    <td>Officer B</td>
+                                    <td>06-05-2025</td>
+                                </tr>
+                                <tr>
+                                    <td>FinancialFraud.txt</td>
+                                    <td>Text</td>
+                                    <td>Officer C</td>
+                                    <td>12-06-2025</td>
+                                </tr>
+                                <tr>
+                                    <td>LoanFraud.pdf</td>
+                                    <td>pds</td>
+                                    <td>Officer D</td>
+                                    <td>22-05-2025</td>
+                                </tr>
+                                <tr>
+                                    <td>SwimSwap File</td>
+                                    <td>File</td>
+                                    <td>Officer E</td>
+                                    <td>16-03-2025</td>
+                                </tr>
+                                <tr>
+                                    <td>DataLeak.pdf</td>
+                                    <td>Pdf</td>
+                                    <td>Officer F</td>
+                                    <td>22-09-2025</td>
+                                </tr>
+                                <tr>
+                                    <td>Malware.txt</td>
+                                    <td>Text</td>
+                                    <td>Officer G</td>
+                                    <td>14-05-2025</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Users Page -->
+                <div id="users-page" class="page">
+                    <h2>USERS</h2>
+                    <div class="search-bar">
+                        <input type="text" id="users-search" placeholder="Search" class="search-input">
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Email</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Office A</td>
+                                    <td>Ethical Hacker</td>
+                                    <td>ethical@icloud.com</td>
+                                </tr>
+                                <tr>
+                                    <td>Office B</td>
+                                    <td>Researcher</td>
+                                    <td>research@gmail.com</td>
+                                </tr>
+                                <tr>
+                                    <td>Officer C</td>
+                                    <td>Analyst</td>
+                                    <td>DA@Yahoo.com</td>
+                                </tr>
+                                <tr>
+                                    <td>Cybersecurity</td>
+                                    <td>Ethical hacker</td>
+                                    <td>CyberSA@Outlook.com</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Settings Page -->
+                <div id="settings-page" class="page">
+                    <h2>Settings</h2>
+                    <div class="settings-card">
+                        <h3>Account Settings</h3>
+                        <p>Manage your account preferences and security settings.</p>
+                    </div>
+                    <div class="settings-card">
+                        <h3>Notifications</h3>
+                        <p>Configure how you receive updates and alerts.</p>
+                    </div>
+                    <div class="settings-card">
+                        <h3>System Settings</h3>
+                        <p>Manage application-wide configurations.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

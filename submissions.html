@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Submissions (Admin)</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:24px}
+    .controls{margin-bottom:12px}
+    pre{background:#f6f8fa;border:1px solid #e1e4e8;padding:12px;border-radius:6px}
+    table{border-collapse:collapse;width:100%}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left}
+    th{background:#f3f4f6}
+  </style>
+</head>
+<body>
+  <h1>Saved Submissions</h1>
+  <div class="controls">
+    <label>Admin token: <input id="token" type="text" placeholder="Enter admin token"></label>
+    <button id="load">Load Submissions</button>
+  </div>
+  <div id="output"></div>
+
+  <script>
+    document.getElementById('load').addEventListener('click', async function(){
+      const token = document.getElementById('token').value.trim();
+      const out = document.getElementById('output');
+      out.innerHTML = 'Loading...';
+      try{
+        const res = await fetch('/api/submissions', { headers: { 'x-admin-token': token } });
+        if (res.status === 401) { out.innerHTML = '<strong>Unauthorized</strong> — invalid token'; return; }
+        if (!res.ok) { out.innerHTML = '<strong>Error</strong> loading submissions'; return; }
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) { out.innerHTML = '<em>No submissions found</em>'; return; }
+        // render table
+        const table = document.createElement('table');
+        const header = table.insertRow();
+        ['Received At','Name','Email','Age','Role','Recommend','Lang','Comments'].forEach(h=>{
+          const th = document.createElement('th'); th.textContent = h; header.appendChild(th);
+        });
+        data.forEach(s=>{
+          const r = table.insertRow();
+          r.insertCell().textContent = s.receivedAt || '';
+          r.insertCell().textContent = s.name || '';
+          r.insertCell().textContent = s.email || '';
+          r.insertCell().textContent = s.age || '';
+          r.insertCell().textContent = s.role || '';
+          r.insertCell().textContent = s.recommend || '';
+          r.insertCell().textContent = (s.lang || []).join(', ');
+          const c = r.insertCell(); c.textContent = s.comments || '';
+        });
+        out.innerHTML = ''; out.appendChild(table);
+      }catch(err){ out.innerHTML = '<strong>Error</strong> — ' + String(err); }
+    });
+  </script>
+</body>
+</html>

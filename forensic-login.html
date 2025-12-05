@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kenyan Forensic App - Login</title>
+    <link rel="stylesheet" href="forensic-login.css">
+    <script src="forensic-login.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="login-card">
+            <!-- Logo & Branding -->
+            <div class="header">
+                <div class="logo">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="20" y="30" width="60" height="50" rx="8" fill="none" stroke="currentColor" stroke-width="3"/>
+                        <circle cx="50" cy="50" r="8" fill="currentColor"/>
+                        <path d="M 35 60 Q 50 70 65 60" stroke="currentColor" stroke-width="2" fill="none"/>
+                    </svg>
+                </div>
+                <h1>Kenyan Forensic App</h1>
+                <p>By Tech Gurus</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="login-form" novalidate>
+                <h2>LOGIN</h2>
+
+                <!-- Username Field -->
+                <div class="form-group">
+                    <div class="input-icon">
+                        <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="8" r="4" fill="currentColor"/>
+                            <path d="M 4 20 Q 4 14 12 14 Q 20 14 20 20" fill="currentColor"/>
+                        </svg>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            placeholder="Username" 
+                            required
+                            aria-label="Username"
+                        >
+                    </div>
+                    <small class="error" id="error-username"></small>
+                </div>
+
+                <!-- Password Field -->
+                <div class="form-group">
+                    <div class="input-icon">
+                        <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="5" y="12" width="14" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+                            <path d="M 9 12 V 8 Q 9 5 12 5 Q 15 5 15 8 V 12" fill="none" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="12" cy="16" r="1.5" fill="currentColor"/>
+                        </svg>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            placeholder="Password" 
+                            required
+                            aria-label="Password"
+                        >
+                    </div>
+                    <small class="error" id="error-password"></small>
+                </div>
+
+                <!-- OTP Code Field -->
+                <div class="form-group">
+                    <div class="input-icon">
+                        <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+                            <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="1"/>
+                            <circle cx="9" cy="15" r="1" fill="currentColor"/>
+                            <circle cx="15" cy="15" r="1" fill="currentColor"/>
+                        </svg>
+                        <input 
+                            type="text" 
+                            id="otp" 
+                            name="otp" 
+                            placeholder="OTP code" 
+                            maxlength="6"
+                            required
+                            aria-label="One-Time Password"
+                        >
+                    </div>
+                    <small class="error" id="error-otp"></small>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-login">Login</button>
+
+                <!-- Form Message -->
+                <div id="form-message" role="status" aria-live="polite" class="form-message"></div>
+            </form>
+
+            <!-- Footer Links -->
+            <div class="footer-links">
+                <a href="#forgot-password">Forgot Password?</a>
+                <span>•</span>
+                <a href="#signup">Sign Up</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

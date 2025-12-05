@@ -1,0 +1,10 @@
+node_modules/
+.env
+.vercel/
+.netlify/
+.cache/
+dist/
+build/
+*.log
+.DS_Store
+submissions.json
