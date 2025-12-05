@@ -15,8 +15,5 @@
       "src": "/(.*)",
       "dest": "server.js"
     }
-  ],
-  "env": {
-    "ADMIN_TOKEN": "@admin_token"
-  }
+  ]
 }
