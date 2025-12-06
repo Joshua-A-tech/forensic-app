@@ -30,6 +30,15 @@ const upload = multer({
   limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE) || 52428800 },
 });
 
+const checkDatabase = (req, res, next) => {
+  const pool = require('../config/db');
+  if (!pool) {
+    return res.status(503).json({ error: 'Database not configured', message: 'Set DATABASE_URL environment variable' });
+  }
+  next()
+};
+
+router.use(checkDatabase);
 router.use(authenticateToken);
 
 router.post('/upload', uploadLimiter, authorizeRole('admin', 'investigator'), upload.single('file'), uploadEvidence);

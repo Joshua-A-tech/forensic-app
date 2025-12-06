@@ -4,7 +4,13 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
-const pool = require('./src/config/db');
+let pool = null;
+try {
+  pool = require('./src/config/db');
+} catch (err) {
+  console.warn('Database connection failed:', err.message);
+}
+
 const { apiLimiter } = require('./src/middleware/rateLimiter');
 
 // Routes
@@ -23,10 +29,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(apiLimiter);
 
-// Ensure uploads directory exists
+// Ensure uploads directory exists (if local storage)
 const uploadDir = process.env.UPLOAD_DIR || './uploads';
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+  try {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  } catch (err) {
+    console.warn('Could not create upload directory:', err.message);
+  }
 }
 
 // Serve static files
@@ -34,7 +44,12 @@ app.use(express.static(path.join(__dirname)));
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  const status = pool ? 'healthy' : 'degraded (no database)';
+  res.json({ 
+    status, 
+    timestamp: new Date().toISOString(),
+    database: pool ? 'connected' : 'not configured'
+  });
 });
 
 // API Routes
@@ -43,6 +58,17 @@ app.use('/api/cases', caseRoutes);
 app.use('/api/evidence', evidenceRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/search', searchRoutes);
+
+// Provide helpful message if database not configured
+if (!pool) {
+  app.get('/api/*', (req, res) => {
+    res.status(503).json({ 
+      error: 'Database not configured',
+      message: 'Set DATABASE_URL environment variable to enable API endpoints',
+      hint: 'Example: postgresql://user:password@host:5432/dbname'
+    });
+  });
+}
 
 // Legacy endpoint for backward compatibility (contact form)
 app.post('/api/contact', async (req, res) => {
@@ -88,7 +114,29 @@ app.get('/api/submissions-legacy', (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err.message);
-  res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
+  
+  // Database connection error
+  if (err.code === 'ECONNREFUSED' || err.message.includes('ECONNREFUSED')) {
+    return res.status(503).json({ 
+      error: 'Database connection failed',
+      message: 'The database server is not responding. Please check DATABASE_URL configuration.'
+    });
+  }
+  
+  // Authentication error
+  if (err.name === 'JsonWebTokenError') {
+    return res.status(403).json({ error: 'Invalid token' });
+  }
+  
+  // Rate limit error
+  if (err.status === 429) {
+    return res.status(429).json({ error: 'Too many requests' });
+  }
+  
+  res.status(err.status || 500).json({ 
+    error: err.message || 'Internal server error',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
 });
 
 // Export for Vercel serverless

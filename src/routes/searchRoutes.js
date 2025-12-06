@@ -4,6 +4,15 @@ const { authenticateToken, authorizeRole } = require('../middleware/auth');
 
 const router = express.Router();
 
+const checkDatabase = (req, res, next) => {
+  const pool = require('../config/db');
+  if (!pool) {
+    return res.status(503).json({ error: 'Database not configured', message: 'Set DATABASE_URL environment variable' });
+  }
+  next();
+};
+
+router.use(checkDatabase);
 router.use(authenticateToken);
 
 // Search endpoint

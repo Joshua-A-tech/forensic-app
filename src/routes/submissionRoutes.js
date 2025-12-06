@@ -4,7 +4,14 @@ const { authenticateToken, authorizeRole } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.use(authenticateToken);
+const checkDatabase = (req, res, next) => {
+  if (!pool) {
+    return res.status(503).json({ error: 'Database not configured', message: 'Set DATABASE_URL environment variable' });
+  }
+  next();
+};
+
+router.use(checkDatabase);
 
 // Get all submissions (admin only)
 router.get('/', authorizeRole('admin'), async (req, res) => {
