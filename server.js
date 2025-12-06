@@ -13,12 +13,19 @@ try {
 
 const { apiLimiter } = require('./src/middleware/rateLimiter');
 
-// Routes
-const authRoutes = require('./src/routes/authRoutes');
-const caseRoutes = require('./src/routes/caseRoutes');
-const evidenceRoutes = require('./src/routes/evidenceRoutes');
-const submissionRoutes = require('./src/routes/submissionRoutes');
-const searchRoutes = require('./src/routes/searchRoutes');
+// Routes (conditionally loaded)
+let authRoutes, caseRoutes, evidenceRoutes, submissionRoutes, searchRoutes;
+if (pool) {
+  try {
+    authRoutes = require('./src/routes/authRoutes');
+    caseRoutes = require('./src/routes/caseRoutes');
+    evidenceRoutes = require('./src/routes/evidenceRoutes');
+    submissionRoutes = require('./src/routes/submissionRoutes');
+    searchRoutes = require('./src/routes/searchRoutes');
+  } catch (err) {
+    console.warn('Error loading routes:', err.message);
+  }
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -39,8 +46,8 @@ if (!fs.existsSync(uploadDir)) {
   }
 }
 
-// Serve static files
-app.use(express.static(path.join(__dirname)));
+// Serve static files from `public/` so Vercel serves frontend assets correctly
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Health check
 app.get('/health', (req, res) => {
@@ -53,22 +60,37 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/cases', caseRoutes);
-app.use('/api/evidence', evidenceRoutes);
-app.use('/api/submissions', submissionRoutes);
-app.use('/api/search', searchRoutes);
-
-// Provide helpful message if database not configured
-if (!pool) {
-  app.get('/api/*', (req, res) => {
-    res.status(503).json({ 
-      error: 'Database not configured',
-      message: 'Set DATABASE_URL environment variable to enable API endpoints',
-      hint: 'Example: postgresql://user:password@host:5432/dbname'
-    });
-  });
+if (pool && authRoutes && caseRoutes && evidenceRoutes && submissionRoutes && searchRoutes) {
+  app.use('/api/auth', authRoutes);
+  app.use('/api/cases', caseRoutes);
+  app.use('/api/evidence', evidenceRoutes);
+  app.use('/api/submissions', submissionRoutes);
+  app.use('/api/search', searchRoutes);
 }
+
+// If database is not configured, provide a file-backed fallback for submissions
+const submissionsFile = pool
+  ? null
+  : path.join(process.env.VERCEL ? '/tmp' : __dirname, 'submissions.json');
+
+const readSubmissionsFile = () => {
+  try {
+    if (!fs.existsSync(submissionsFile)) return [];
+    const raw = fs.readFileSync(submissionsFile, 'utf8');
+    return raw ? JSON.parse(raw) : [];
+  } catch (err) {
+    console.error('Failed to read submissions file:', err.message);
+    return [];
+  }
+};
+
+const writeSubmissionsFile = (arr) => {
+  try {
+    fs.writeFileSync(submissionsFile, JSON.stringify(arr, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Failed to write submissions file:', err.message);
+  }
+};
 
 // Legacy endpoint for backward compatibility (contact form)
 app.post('/api/contact', async (req, res) => {
@@ -87,14 +109,32 @@ app.post('/api/contact', async (req, res) => {
     if (Object.keys(errors).length) {
       return res.status(400).json({ errors });
     }
+    // If DB available, store there; otherwise fallback to file-backed storage
+    if (pool) {
+      const result = await pool.query(
+        'INSERT INTO submissions (name, email, age, role, recommend, comments, languages) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+        [name.trim(), email.trim(), Number(age), role, recommend, comments || '', JSON.stringify(lang || [])]
+      );
+      return res.json({ message: 'Submission received', submissionId: result.rows[0].id });
+    }
 
-    // Store in database
-    const result = await pool.query(
-      'INSERT INTO submissions (name, email, age, role, recommend, comments, languages) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
-      [name.trim(), email.trim(), Number(age), role, recommend, comments || '', JSON.stringify(lang || [])]
-    );
-
-    res.json({ message: 'Submission received', submissionId: result.rows[0].id });
+    // Fallback: append to submissions.json
+    const submissions = readSubmissionsFile();
+    const id = Date.now();
+    const item = {
+      id,
+      name: String(name).trim(),
+      email: String(email).trim(),
+      age: Number(age),
+      role,
+      recommend,
+      comments: comments || '',
+      languages: lang || [],
+      receivedAt: new Date().toISOString(),
+    };
+    submissions.push(item);
+    writeSubmissionsFile(submissions);
+    return res.json({ message: 'Submission received (file fallback)', submissionId: id });
   } catch (error) {
     console.error('Contact submission error:', error.message);
     res.status(500).json({ error: 'Failed to process submission' });
@@ -107,9 +147,30 @@ app.get('/api/submissions-legacy', (req, res) => {
   if (!token || token !== process.env.ADMIN_TOKEN) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
+  // If DB is available, point to the normal submissions endpoint (handled by routes)
+  if (pool) {
+    return res.json({ message: 'Database is configured; use GET /api/submissions with auth' });
+  }
 
-  res.json({ message: 'Use POST /api/submissions instead for authenticated access' });
+  // Fallback: return file-backed submissions
+  if (!submissionsFile) return res.json([]);
+  const submissions = readSubmissionsFile();
+  return res.json(submissions);
 });
+
+// When no database is configured, expose a protected GET /api/submissions endpoint
+// that returns stored submissions from the file fallback so admins can still view data.
+if (!pool) {
+  app.get('/api/submissions', (req, res) => {
+    const token = req.header('x-admin-token');
+    if (!token || token !== process.env.ADMIN_TOKEN) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const submissions = readSubmissionsFile();
+    return res.json(submissions);
+  });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {

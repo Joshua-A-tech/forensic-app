@@ -13,9 +13,6 @@ A production-grade forensic case and evidence management system with:
 ## Quick Start (Local Development)
 
 ### Prerequisites
-- Node.js 18+
-- PostgreSQL 12+ (or use Vercel Postgres)
-- Git
 
 ### Installation
 ```bash
@@ -34,6 +31,49 @@ npm run migrate
 # Start development server
 npm run dev
 ```
+
+## Project structure (updated)
+
+- `public/` - Static frontend assets served by the app and by Vercel. Place HTML/CSS/JS here for client pages.
+- `api/` - Serverless function wrappers used by Vercel. `api/server.js` exposes the Express app.
+- `src/` - Application source code (controllers, routes, middleware, utils).
+- `archive/` - Preserved original root static files (moved from project root during reorganization).
+
+### Archive cleanup
+
+The `archive/` folder contains copies of the original static files that were previously at the project root. They are preserved for reference. You can safely delete `archive/` once you're satisfied with the reorganization.
+
+### Storage scaffold
+
+The repository now includes a storage scaffold at `src/utils/storage.js`. By default it writes uploads to the local `UPLOAD_DIR` (configurable via env). You can implement S3 or Vercel Blob by replacing or extending this module. Required env vars for S3 include `S3_BUCKET`, `S3_REGION`, `S3_KEY`, and `S3_SECRET`.
+
+### Archive
+
+The `archive/` folder contains copies of the original static files that were previously at the project root. They are kept for historical/reference purposes after reorganizing static assets into `public/`.
+
+### Storage scaffold
+
+The repository now includes a storage scaffold at `src/utils/storage.js`. By default it writes uploads to the local `UPLOAD_DIR` (configurable via env). You can implement S3 or Vercel Blob by replacing or extending this module. Required env vars for S3 include `S3_BUCKET`, `S3_REGION`, `S3_KEY`, and `S3_SECRET`.
+
+When adding new static pages, place them under `public/` and reference assets with root-absolute paths (e.g. `/forensic-login.js`).
+
+To run locally:
+
+```powershell
+npm.cmd install
+npm.cmd start
+# open http://localhost:3000/forensic-login.html
+```
+
+## New project layout notes
+
+- All static frontend assets moved to `public/`. Use root-absolute paths (e.g. `/forensic-dashboard.js`).
+- The Express app is exported by `server.js` and the Vercel wrapper is `api/server.js`.
+- Original root static files have been archived into `archive/` for reference.
+- A storage scaffold is available at `src/utils/storage.js` — implement S3 or Vercel Blob there when ready.
+
+
+To deploy with Vercel the `api/` folder exposes serverless functions; `public/` will be served as static assets.
 
 Server runs on `http://localhost:3000`
 
