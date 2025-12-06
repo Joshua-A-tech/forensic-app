@@ -1,5 +1,6 @@
 node_modules/
 .env
+.env.local
 .vercel/
 .netlify/
 .cache/
@@ -8,3 +9,7 @@ build/
 *.log
 .DS_Store
 submissions.json
+uploads/
+*.pdf
+*.csv
+.vercel
