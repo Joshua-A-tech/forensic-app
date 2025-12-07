@@ -10,6 +10,14 @@
     {
       "src": "/api/(.*)",
       "dest": "api/server.js"
+    },
+    {
+      "src": "/(.*\\.(?:css|js|png|jpg|jpeg|gif|svg|ico|json|txt|woff|woff2|ttf|eot)$)",
+      "dest": "/public/$1"
+    },
+    {
+      "src": "/.*",
+      "dest": "/public/index.html"
     }
   ]
 }
