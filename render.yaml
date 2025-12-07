@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: forensic-app
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: ADMIN_TOKEN
+        sync: false
+    disk:
+      name: submissions-storage
+      mountPath: /mnt/data
+      sizeGB: 1
